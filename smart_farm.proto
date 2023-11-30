@@ -19,6 +19,29 @@ service SoilConditionService {
 }
 
 service SoilConditionService {
-    rpc sensorReading (stream SoilConditionMessage) returns (Replay);
+    rpc sensorReading (stream SoilConditionMessage) returns (Reply);
     rpc turnOnOffWater (WaterMessage) returns (SprinklerReplay);
+}
+
+service SoilIrrigation{
+    rpc registerDevice (RegisterMessage) returns (stream ServerRequest);
+    rpc sensorReading (stream SoilConditionMessage) returns (ReadingReply);
+}
+
+service RemoteVehicle{
+    // register device for broadcasts
+    rpc registerDevice(RegisteringMessage) returns (stream ServerRequest);
+    // get information of where to go 
+    rpc getRoute (Position) returns (stream Position);
+    // what task to be done at position ie. harvesting appples, tomatos,sensor reading etc
+    rpc getTask (Position) returns (Task);
+    // save information of finished task
+    rpc recordTaskFinished (Task) returns (recordReply);
+    // send status like fuel and space left in harvest box to get message to go back home
+    rpc vehicleStatus (stream Status) returns (goHomeMessage);
+} 
+
+message RemoteMessage {
+
+    string job  = 2;
 }
