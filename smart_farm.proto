@@ -14,19 +14,15 @@ service GreenhouseService2 {
 
 }
 
-service SoilConditionService {
-    rpc measurmentCondition (stream SoilConditionMessage) returns (stream changeSoilSetting);
-}
-
-service SoilConditionService {
-    rpc sensorReading (stream SoilConditionMessage) returns (Reply);
-    rpc turnOnOffWater (WaterMessage) returns (SprinklerReplay);
-}
 
 service SoilIrrigation{
-    rpc registerDevice (RegisterMessage) returns (stream ServerRequest);
-    rpc sensorReading (stream SoilConditionMessage) returns (ReadingReply);
+    // sensors and sprinklers must register for area they are 
+    rpc registerDevice (RegisterArea) returns (stream ServerRequest);
+    // sensors sends reading if reading is low server sends turn on water for that are (and off)
+    rpc sensorReading (stream SoilCondition) returns (stream WaterSetting);
 }
+
+
 
 service RemoteVehicle{
     // register device for broadcasts
@@ -39,6 +35,8 @@ service RemoteVehicle{
     rpc recordTaskFinished (Task) returns (recordReply);
     // send status like fuel and space left in harvest box to get message to go back home
     rpc vehicleStatus (stream Status) returns (goHomeMessage);
+    // for drone route must be continous with tasks being part of the route
+    rpc getDroneRoute (stream Position) returns (stream PositionWithTask);
 } 
 
 message RemoteMessage {
