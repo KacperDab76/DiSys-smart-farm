@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package farm;
+
+service GreenhouseService {
+    // for registering devices in greenhouse
+    rpc registerDevice (RegisterMessage) returns (Registered);
+    rpc sensorReading (stream SensorReading) returns (ReadingResult);
+    rpc changeClimateSetting (stream ClimateSetting) returns (ClimateSet);
+}
+
+service GreenhouseService2 {
+    rpc climateSettings(stream SensorReading) returns (stream ClimateSetting);
+
+}
+
+service SoilConditionService {
+    rpc measurmentCondition (stream SoilConditionMessage) returns (stream changeSoilSetting);
+}
+
+service SoilConditionService {
+    rpc sensorReading (stream SoilConditionMessage) returns (Replay);
+    rpc turnOnOffWater (WaterMessage) returns (SprinklerReplay);
+}
