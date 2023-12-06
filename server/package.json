@@ -1,0 +1,11 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "smart farm server",
+  "main": "app.js",
+  "scripts": {
+    "test": "node app.js"
+  },
+  "author": "kacper dabrowski",
+  "license": "ISC"
+}
