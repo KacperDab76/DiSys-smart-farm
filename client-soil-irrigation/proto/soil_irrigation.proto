@@ -1,0 +1,34 @@
+// soil irrigation service messages
+service SoilIrrigationService{
+    // sensors and sprinklers must register for area they are 
+    // server can use his srteam to turn sprinkers on
+    rpc registerDevice (RegisterArea) returns (stream ServerRequest);
+    // sensors sends reading if reading is low server sends turn on water for that are (and off)
+    rpc sensorReading (stream SoilCondition) returns (ServerMessage);
+    // sprinkler sends message that it's on and waits for turn off message
+    rpc turnOnOffWater (SprinklerOn) returns (TurnOffReply); 
+}
+
+message RegisterArea{
+    unint32 areaID = 1;
+    // kind of device ie: sensor or sprinkler
+    string device = 2; 
+}
+// this one is universal
+message ServerRequest{
+    
+    string task = 1;
+ 
+}
+message SoilCondition{
+    uint32 soil_humidity = 1;
+}
+message ServerMessage{
+    string task = 1;
+}
+message SprinklerOn{
+    bool turned_on = 1;
+}
+message TurnOffReply{
+    bool turn_off = 1;
+} 

@@ -1,0 +1,8 @@
+service GreenhouseService {
+    // Register greenhouse device on server
+    rpc registerGreenhouse (RegisterGreenhouse) returns (stream ServerRequest);
+    // greenhouse device sends sensors mesurements and receives new climate settings if neccesery
+    // for example if temp is too low (also include CO2 levels)
+    rpc getClimateSetting (stream SensorsMesurements) returns (stream ClimateSetting);
+}
+

@@ -1,0 +1,15 @@
+
+service RemoteVehicleService{
+    // register device for broadcasts
+    rpc registerDevice(RegisterVehicle) returns (stream ServerRequest);
+    // get information of where to go 
+    rpc getRoute (Position) returns (stream Position);
+    // what task to be done at position ie. harvesting appples, tomatos,sensor reading etc
+    rpc getTask (Position) returns (Task);
+    // save information of finished task
+    rpc recordTaskFinished (Task) returns (TaskSaved);
+    // send status like fuel and space left in harvest box to get message to go back home
+    rpc vehicleStatus (stream Status) returns (GoHomeMessage);
+    // for drone route must be continous with tasks being part of the route
+    rpc getDroneRoute (stream Position) returns (stream PositionWithTask);
+} 

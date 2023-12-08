@@ -1,0 +1,26 @@
+service userAppService {
+    // Registering user app 
+    rpc registerUserApp (RegisterApp) returns (Registered);
+    // request list of GreenHouses
+    rpc getGreenhouses (GreenhouseListRequest) returns (stream Greenhouse);
+    // get data from sensors in greenhouse
+    rpc getGreenhouseData (Greenhouse) returns (stream SensorMeasurments);
+    // get climate settings from greenhouse - and send new settings if necessary
+    rpc getGreenhouseClimate (Greenhouse) returns (ClimateSettings);
+    // get list of areas with soil 
+    rpc getSoilAreas (AreaListRequest) returns (stream Area);
+    // get data of soil moisture in area
+    rpc getSoilData (Area) returns (SoilConditions);
+    // get status (on/off) of sprinklers in area
+    rpc getSprinklerStatus (Area) returns (SprinklerStatus);
+    // get status of sprinklers in all areas
+    rpc getAllSprinklersStatus (SprinklersStatusRequest) returns (stream SprinklerStatus);
+    // turn on or off sprinkler in area
+    rpc turnOnOffSprinkler (Area) returns (SprinklerStatus);
+    // get the list of vehicles
+    rpc getVehicles (VehicleListRequest) returns (stream Vehicle);
+    // set vehicle route and task
+    rpc setVehicleTask (VehicleTask) returns (stream VehicleStatus);
+    // get list of finished tasks by vehicle
+    rpc getRecordedTasks (Vehicle) returns (stream Task); 
+}
