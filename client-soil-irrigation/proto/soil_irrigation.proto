@@ -1,3 +1,7 @@
+syntax = "proto3";
+
+package farm;
+
 // soil irrigation service messages
 service SoilIrrigationService{
     // sensors and sprinklers must register for area they are 
