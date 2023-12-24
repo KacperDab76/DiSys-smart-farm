@@ -13,16 +13,25 @@ service SoilIrrigationService{
     rpc turnOnOffWater (SprinklerOn) returns (TurnOffReply); 
 }
 
+// this is for all services
+enum Task {
+    not_registerd = 0;
+    registered = 1;
+    soil_water_on = 2;
+    soil_water_off = 3;
+}
+
 message RegisterArea{
-    unint32 areaID = 1;
+    uint32 areaID = 1;
     // kind of device ie: sensor or sprinkler
+    // use enums?
     string device = 2; 
 }
 // this one is universal
 message ServerRequest{
     
-    string task = 1;
- 
+    Task task = 1;
+    string deviceID = 2;
 }
 message SoilCondition{
     uint32 soil_humidity = 1;

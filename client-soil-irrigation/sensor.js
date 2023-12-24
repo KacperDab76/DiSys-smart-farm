@@ -9,7 +9,7 @@ var packageDefinition = protoLoader.loadSync(
 var smart_farm_proto = grpc.loadPackageDefinition(packageDefinition).farm;
 
 
-var client = new smart_farm_proto.CalcService('localhost:40000',grpc.credentials.createInsecure());
+var client = new smart_farm_proto.SoilIrrigationService('localhost:40000',grpc.credentials.createInsecure());
 
 var device = "soil_sensor";
 var area = 0;
@@ -21,24 +21,31 @@ if (process.argv[2]){
         area = areaNumber;
     
 }
-console.log("Sensor for area"+area);
+console.log("Sensor for area "+area);
 
 
 function main() {
             
             try{
+                console.log("try");
+                    // change to call.on("data",...)
                 client.registerDevice({areaID: area, device: device},
                     (err,response)=>{
+                        console.log("response");
                         try {
-
+                                
                             var task = response.task;
-                            deviceID = response.deviceID;
-                            
-                            if (task === 1){
-                                console.log("sensor registered ID:"+deviceID);
-                            }
-                            else {
-                                console.log("not registerd");
+
+                            if(task != 0){
+
+                                deviceID = response.deviceID;
+                                
+                                if (task === 1){
+                                    console.log("sensor registered ID:"+deviceID);
+                                }
+                                else {
+                                    console.log("not registerd");
+                                }
                             }
                         }
                         catch(err){

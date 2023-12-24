@@ -2,16 +2,109 @@ syntax = "proto3";
 
 package farm;
 
- 
+// #file: client-greenhouse\proto\greenhouse.proto 
 service GreenhouseService {
     // Register greenhouse device on server
     rpc registerGreenhouse (RegisterGreenhouse) returns (stream ServerRequest);
     // greenhouse device sends sensors mesurements and receives new climate settings if neccesery
     // for example if temp is too low (also include CO2 levels)
-    rpc getClimateSetting (stream SensorsMesurements) returns (stream ClimateSetting);
+    rpc getClimateSetting (stream SensorMeasurements) returns (stream ClimateSetting);
 }
 
+message RegisterGreenhouse {
 
+}
+message SensorMeasurements {
+
+}
+message ClimateSetting {
+
+}
+// #endfile
+
+
+// #file: client-remote-vehicle\proto\remote_vehicle.proto
+
+service RemoteVehicleService{
+    // register device for broadcasts
+    rpc registerDevice(RegisterVehicle) returns (stream ServerRequest);
+    // get information of where to go 
+    rpc getRoute (Position) returns (stream Position);
+    // what task to be done at position ie. harvesting appples, tomatos,sensor reading etc
+    rpc getTask (Position) returns (VehicleTask);
+    // save information of finished task
+    rpc recordTaskFinished (VehicleTask) returns (TaskSaved);
+    // send status like fuel and space left in harvest box to get message to go back home
+    rpc vehicleStatus (stream VehicleStatus) returns (GoHomeMessage);
+    // for drone route must be continous with tasks being part of the route
+    rpc getDroneRoute (stream Position) returns (stream PositionWithTask);
+} 
+
+message RegisterVehicle{}
+//message Position {}
+message VehicleTask{}
+message TaskSaved{}
+message VehicleStatus {}
+message GoHomeMessage {}
+message PositionWithTask {}
+// #endfile
+// #file: client-user-app\proto\user_app.proto
+service userAppService {
+    // Registering user app 
+    rpc registerUserApp (RegisterApp) returns (Registered);
+    // request list of GreenHouses
+    rpc getGreenhouses (GreenhouseListRequest) returns (stream Greenhouse);
+    // get data from sensors in greenhouse
+    rpc getGreenhouseData (Greenhouse) returns (stream SensorMeasurments);
+    // get climate settings from greenhouse - and send new settings if necessary
+    rpc getGreenhouseClimate (Greenhouse) returns (ClimateSettings);
+    // get list of areas with soil 
+    rpc getSoilAreas (AreaListRequest) returns (stream Area);
+    // get data of soil moisture in area
+    rpc getSoilData (Area) returns (SoilCondition);
+    // get status (on/off) of sprinklers in area
+    rpc getSprinklerStatus (Area) returns (SprinklerStatus);
+    // get status of sprinklers in all areas
+    rpc getAllSprinklersStatus (SprinklersStatusRequest) returns (stream SprinklerStatus);
+    // turn on or off sprinkler in area
+    rpc turnOnOffSprinkler (Area) returns (SprinklerStatus);
+    // get the list of vehicles
+    rpc getVehicles (VehicleListRequest) returns (stream Vehicle);
+    // set vehicle route and task
+    rpc setVehicleTask (VehicleTask) returns (stream VehicleStatus);
+    // get list of finished tasks by vehicle
+    rpc getRecordedTasks (Vehicle) returns (stream VehicleTask); 
+}
+
+message RegisterApp{}
+message Registered{}
+message GreenhouseListRequest{}
+message Greenhouse{}
+message SensorMeasurments{}
+message ClimateSettings{}
+message AreaListRequest{}
+message Area{}
+//message SoilCondition{}
+message SprinklerStatus{}
+message SprinklersStatusRequest{}
+message VehicleListRequest{}
+message Vehicle{}
+//message VehicleTask{}
+//message VehicleStatus{}
+// message Vehicle{}
+//message Task{}
+// #endfile
+message Position {
+    uint32 coordinateX = 1;
+    uint32 coordinateY = 2;
+}
+
+message RemoteMessage {
+
+    string job  = 2;
+}
+
+// #file: client-soil-irrigation\proto\soil_irrigation.proto
 // soil irrigation service messages
 service SoilIrrigationService{
     // sensors and sprinklers must register for area they are 
@@ -23,16 +116,25 @@ service SoilIrrigationService{
     rpc turnOnOffWater (SprinklerOn) returns (TurnOffReply); 
 }
 
+// this is for all services
+enum Task {
+    not_registerd = 0;
+    registered = 1;
+    soil_water_on = 2;
+    soil_water_off = 3;
+}
+
 message RegisterArea{
-    unint32 areaID = 1;
+    uint32 areaID = 1;
     // kind of device ie: sensor or sprinkler
+    // use enums?
     string device = 2; 
 }
 // this one is universal
 message ServerRequest{
     
-    string task = 1;
- 
+    Task task = 1;
+    string deviceID = 2;
 }
 message SoilCondition{
     uint32 soil_humidity = 1;
@@ -46,57 +148,4 @@ message SprinklerOn{
 message TurnOffReply{
     bool turn_off = 1;
 } 
-
-
-
-service RemoteVehicleService{
-    // register device for broadcasts
-    rpc registerDevice(RegisterVehicle) returns (stream ServerRequest);
-    // get information of where to go 
-    rpc getRoute (Position) returns (stream Position);
-    // what task to be done at position ie. harvesting appples, tomatos,sensor reading etc
-    rpc getTask (Position) returns (Task);
-    // save information of finished task
-    rpc recordTaskFinished (Task) returns (TaskSaved);
-    // send status like fuel and space left in harvest box to get message to go back home
-    rpc vehicleStatus (stream Status) returns (GoHomeMessage);
-    // for drone route must be continous with tasks being part of the route
-    rpc getDroneRoute (stream Position) returns (stream PositionWithTask);
-} 
-
-service userAppService {
-    // Registering user app 
-    rpc registerUserApp (RegisterApp) returns (Registered);
-    // request list of GreenHouses
-    rpc getGreenhouses (GreenhouseListRequest) returns (stream Greenhouse);
-    // get data from sensors in greenhouse
-    rpc getGreenhouseData (Greenhouse) returns (stream SensorMeasurments);
-    // get climate settings from greenhouse - and send new settings if necessary
-    rpc getGreenhouseClimate (Greenhouse) returns (ClimateSettings);
-    // get list of areas with soil 
-    rpc getSoilAreas (AreaListRequest) returns (stream Area);
-    // get data of soil moisture in area
-    rpc getSoilData (Area) returns (SoilConditions);
-    // get status (on/off) of sprinklers in area
-    rpc getSprinklerStatus (Area) returns (SprinklerStatus);
-    // get status of sprinklers in all areas
-    rpc getAllSprinklersStatus (SprinklersStatusRequest) returns (stream SprinklerStatus);
-    // turn on or off sprinkler in area
-    rpc turnOnOffSprinkler (Area) returns (SprinklerStatus);
-    // get the list of vehicles
-    rpc getVehicles (VehicleListRequest) returns (stream Vehicle);
-    // set vehicle route and task
-    rpc setVehicleTask (VehicleTask) returns (stream VehicleStatus);
-    // get list of finished tasks by vehicle
-    rpc getRecordedTasks (Vehicle) returns (stream Task); 
-}
-
-message Position {
-    uint32 coordinateX = 1;
-    uint32 coordinateY = 2;
-}
-
-message RemoteMessage {
-
-    string job  = 2;
-}
+// #endfile 

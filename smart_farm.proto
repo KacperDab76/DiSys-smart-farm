@@ -11,6 +11,15 @@ service GreenhouseService {
     rpc getClimateSetting (stream SensorsMesurements) returns (stream ClimateSetting);
 }
 
+message RegisterGreenhouse {
+
+}
+message SnsorMesurement {
+
+}
+message ClimateSetting {
+
+}
 // #endfile
 
 
@@ -22,14 +31,22 @@ service RemoteVehicleService{
     // get information of where to go 
     rpc getRoute (Position) returns (stream Position);
     // what task to be done at position ie. harvesting appples, tomatos,sensor reading etc
-    rpc getTask (Position) returns (Task);
+    rpc getTask (Position) returns (VehicleTask);
     // save information of finished task
-    rpc recordTaskFinished (Task) returns (TaskSaved);
+    rpc recordTaskFinished (VehicleTask) returns (TaskSaved);
     // send status like fuel and space left in harvest box to get message to go back home
-    rpc vehicleStatus (stream Status) returns (GoHomeMessage);
+    rpc vehicleStatus (stream VehicleStatus) returns (GoHomeMessage);
     // for drone route must be continous with tasks being part of the route
     rpc getDroneRoute (stream Position) returns (stream PositionWithTask);
 } 
+
+message RegisterVehicle{}
+message Position {}
+message VehicleTask{}
+message TaskSaved{}
+message VehicleStatus {}
+message GoHomeMessage {}
+message PositionWithTask {}
 // #endfile
 // #file: client-user-app\proto\user_app.proto
 service userAppService {
@@ -58,6 +75,24 @@ service userAppService {
     // get list of finished tasks by vehicle
     rpc getRecordedTasks (Vehicle) returns (stream Task); 
 }
+
+message RegisterApp{}
+message Registerd{}
+message GreenhouseListRequest{}
+message Greenhouse{}
+message SensorMeasurments{}
+message ClimateSettings{}
+message AreaListRequest{}
+message Area{}
+message SoilCondition{}
+message SprinklerStatus{}
+message SprinklerStatusRequest{}
+message VehicleListRequest{}
+message Vehicle{}
+message VehicleTask{}
+message VehicleStatus{}
+message Vehicle{}
+message Task{}
 // #endfile
 message Position {
     uint32 coordinateX = 1;

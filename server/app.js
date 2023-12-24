@@ -1,6 +1,6 @@
 var grpc = require("@grpc/grpc-js");
 var protoLoader = require("@grpc/proto-loader");
-var PROTO_PATH = __dirname+"/protos/smart_farm.proto";
+var PROTO_PATH = __dirname+"/proto/smart_farm.proto";
 var packageDefinition = protoLoader.loadSync(
     PROTO_PATH
 );
@@ -28,10 +28,10 @@ var soil_areas  = [
 ];
 console.log("I'm a smart farm server");
 function registerDevice(call){
-
+    console.log("register device");
     var area = call.request.areaID;
     var device = call.request.device;
-
+    console.log("device "+device);
     if (devices[device].service   == "soil"){
         // register device for area
         // add sprinkler to area
@@ -50,6 +50,7 @@ function registerDevice(call){
                 // sensor already registered
                 call.write({task: 0});  // not registered for service
                 call.end();
+                console.log("not registering");
             }
             else {
                 // no sensor in this are - register
