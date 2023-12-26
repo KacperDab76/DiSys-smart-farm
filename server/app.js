@@ -32,10 +32,10 @@ function registerDevice(call){
     var area = call.request.areaID;
     var device = call.request.device;
     console.log("device "+device);
-    if (devices[device].service   == "soil"){
+    //if (devices[device].service   == "soil"){
         // register device for area
         // add sprinkler to area
-        if (device[device].name == "soil_sprinkler"){
+        if (device == "soil_sprinkler"){
             var deviceID = "soil-"+area+"-"+soil_sprinklers[area].length;
             var sprinkler = {call: call,deviceID: deviceID};
             soil_sprinklers[area].push(sprinkler);
@@ -43,14 +43,14 @@ function registerDevice(call){
             console.log("registered sprinkler"+deviceID);
 
         }
-        else if (device[device].name == "soil_sensor"){
+        else if (device == "soil_sensor"){
             // check if there is a sensor registered aa there shouldn't be more than one sensor for area
             // register if no sensor registered for that area
             if (soil_sensors[area]){
                 // sensor already registered
-                call.write({task: 0});  // not registered for service
+                call.write({task: 0,deviceID: null});//,message: "only one sensor per area"});  // not registered for service
                 call.end();
-                console.log("not registering");
+                console.log("not registering device");
             }
             else {
                 // no sensor in this are - register
@@ -58,14 +58,16 @@ function registerDevice(call){
                 var sensor = {call:call,deviceID: deviceID };
                 soil_sensors[area] = sensor;
                 call.write({task:1,deviceID: deviceID}); //registered
-                console.log("registered sensor"+deviceID);
+                console.log(`registered sensor ${deviceID} area ${area}`);
             }
         }
-    }
+   /* }
     else {
+        console.log("not registering");
         call.write({task: 0});  // not registered for service
         call.end();
     }
+    */
     // call.write();
     // call.end();
 }

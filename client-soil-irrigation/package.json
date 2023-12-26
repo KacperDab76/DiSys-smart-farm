@@ -7,7 +7,8 @@
     "start": "node app.js",
     "test": "node app.js 1",
     "sensor": "node sensor.js",
-    "sprinkler": "node sprinkler.js"
+    "sprinkler": "node sprinkler.js",
+    "sensors": "node sensor.js 1 & node sensor.js 2 & node sensor.js 3 & node sensor.js 0"
 
   },
   "author": "",
