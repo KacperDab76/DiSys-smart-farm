@@ -1,6 +1,8 @@
 //var readlineSync = require('readline-sync');
 var grpc = require("@grpc/grpc-js");
 var protoLoader = require("@grpc/proto-loader");
+const { waitForDebugger } = require("inspector");
+const { callbackify } = require("util");
 var PROTO_PATH = __dirname+"/proto/soil_irrigation.proto";
 var packageDefinition = protoLoader.loadSync(
     PROTO_PATH
@@ -26,7 +28,24 @@ if (process.argv[2]){
 console.log("Sensor for area "+area);
 
 function sendData() {
+    var call = client.sensorReading((error,reply)=>{
+        if (error){
+            ///callback(error);
+            console.log("error occured");
 
+        }
+        else {
+            console.log(`task : ${reply.task}`);
+        }
+    });
+
+    for (const data of sensorData[deviceID]){
+        console.log(data);
+        wait(1000);
+        call.write({soil_humidity: data});
+    }
+
+    call.end();
 }
 
 function main() {
@@ -36,7 +55,7 @@ function main() {
                     // change to call.on("data",...)
                 var call = client.registerDevice({areaID: area, device: device});
                     call.on("data",(response)=>{
-                        //console.log("response");
+                        //console.log(response);
                         try {
                                 
                             var task = response.task;
@@ -46,7 +65,7 @@ function main() {
                                 deviceID = response.deviceID;
                                 
                                 if (task === 1){
-                                    console.log("sensor registered ID:"+deviceID);
+                                    console.log("sensor registered ID: "+deviceID);
                                     // do some sensor work
                                     sendData();
                                 }

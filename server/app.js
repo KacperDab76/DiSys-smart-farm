@@ -48,7 +48,9 @@ function registerDevice(call){
             // register if no sensor registered for that area
             if (soil_sensors[area]){
                 // sensor already registered
-                call.write({task: 0,deviceID: null});//,message: "only one sensor per area"});  // not registered for service
+                var reply = {task: 0,deviceID: null,message: "only one sensor per area"};
+                console.log(reply);
+                call.write(reply);  // not registered for service
                 call.end();
                 console.log("not registering device");
             }
@@ -72,6 +74,12 @@ function registerDevice(call){
     // call.end();
 }
 function sensorReading(call,callback){
+    call.on("data",(reading)=>{
+        console.log(reading.soil_humidity);
+    });
+    call.on("end", ()=>{callback(null,{task: 1})});
+    call.on("error",(err)=> {console.log(err);});
+
     
 }
 // sprinkler sends info that water is on

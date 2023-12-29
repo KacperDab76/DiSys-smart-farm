@@ -133,8 +133,9 @@ message RegisterArea{
 // this one is universal
 message ServerRequest{
     
-    Task task = 1;
+    uint32 task = 1;
     string deviceID = 2;
+    string message = 3;
 }
 message SoilCondition{
     uint32 soil_humidity = 1;
