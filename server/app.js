@@ -166,7 +166,7 @@ function calculate(call,callback,operation){
 var server = new grpc.Server();
 server.addService(smart_farm_proto.SoilIrrigationService.service,{
     registerDevice: registerDevice,
-    sensorReading :sensorReading,
+    sensorReading : sensorReading,
     turnOnOffWater: turnOnOffWater
 });
 

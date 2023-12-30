@@ -28,23 +28,32 @@ if (process.argv[2]){
 console.log("Sensor for area "+area);
 
 function sendData() {
-    var call = client.sensorReading((error,reply)=>{
-        if (error){
-            ///callback(error);
-            console.log("error occured");
+    console.log("send data");
+    try {
 
+        var call = client.sensorReading((error,reply)=>{
+            if (error){
+                ///callback(error);
+                console.log("error occured");
+                
+            }
+            else {
+                console.log(`task : ${reply.task}`);
+            }
+        });
+        
+        for (const data of sensorData[area]){
+            console.log(data);
+            setInterval(()=>{
+                call.write({soil_humidity: data});
+                },10000
+            );
         }
-        else {
-            console.log(`task : ${reply.task}`);
-        }
-    });
-
-    for (const data of sensorData[deviceID]){
-        console.log(data);
-        wait(1000);
-        call.write({soil_humidity: data});
+        
     }
-
+    catch (er) {
+        console.log(`error ${er}`);
+    }
     call.end();
 }
 
