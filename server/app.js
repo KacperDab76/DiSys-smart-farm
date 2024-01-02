@@ -25,6 +25,8 @@ var devices = [
 // only one sensor allowed per area
 var soil_sprinklers = [];
 var soil_sensors = [];
+// under this level turn on sprinklers
+const humidity_level = 50;
 var soil_areas  = [
     {"name": "garden 1"},
     {"name": "garden 2"},
@@ -42,16 +44,23 @@ function print(message){
 
 console.log("I'm a smart farm server");
 function registerDevice(call){
-    console.log("register device");
+    print("register device");
     var area = call.request.areaID;
     var device = call.request.device;
-    console.log("device "+device);
+    print("device "+device);
     //if (devices[device].service   == "soil"){
         // register device for area
         // add sprinkler to area
         if (device == "soil_sprinkler"){
-            var deviceID = "soil-"+area+"-"+soil_sprinklers[area].length;
-            var sprinkler = {call: call,deviceID: deviceID};
+            var sprinklerNo = 0;
+            if(!soil_sprinklers[area]){
+                soil_sprinklers[area] = [];
+            }
+            sprinklerNo = soil_sprinklers[area].length
+
+            var deviceID = "soil-"+area+"-"+sprinklerNo;
+            print(`sprinkler ${deviceID}`);
+            var sprinkler = {call: call,deviceID: deviceID, waterOn: false};
             soil_sprinklers[area].push(sprinkler);
             call.write({task:1,deviceID: deviceID}); //registered
             console.log("registered sprinkler"+deviceID);
@@ -98,7 +107,34 @@ function sensorReading(call,callback){
     call.on("data",(reading)=>{
         // console.log("data received");
         // console.log(reading);
-        console.log(reading.soil_humidity);
+        print(reading.soil_humidity);
+
+        if (reading.soil_humidity < humidity_level){
+            // turn on sprinklers
+            print(`turn on sprinklers for area ${reading.areaID}`);
+            const area = reading.areaID;
+            if (soil_sprinklers[area]){
+                for (sprinkler of soil_sprinklers[reading.areaID]){
+                    print(`turn on ${sprinkler.deviceID}`);
+                    sprinkler.call.write({task: 2,deviceID: sprinkler.deviceID});
+                }
+            }
+        }
+        else {
+            // if humidity over level AND sprinklers on
+            print(`turn off sprinklers for area ${reading.areaID}`);
+            const area = reading.areaID;
+            if (soil_sprinklers[area]){
+                for (sprinkler of soil_sprinklers[area]){
+                    print(sprinkler);
+                    if(sprinkler.waterOn){
+
+                        print(`turn off ${sprinkler}`);
+                        sprinkler.call.write({task: 3,deviceID: sprinkler.deviceID});
+                    }
+                }
+            }           
+        }
     });
     call.on("end", ()=>{
         console.log("end of sensor data");
@@ -131,83 +167,25 @@ function cancelRegistration(call, callback) {
 // sprinkler sends info that water is on
 function turnOnOffWater(call,callback){
     // use callback to send back message
-    // save callback to use it later to turn off water
-}
-
-// calculator leftovers
-function add(call,callback) {
-    console.log("add");
-    calculate(call,callback,"add");
-}
-
-function subtract(call,callback){
-    calculate(call,callback,"subtract");
-}
-function multiply(call,callback){
-    calculate(call,callback,"multiply");
-}
-function divide(call,callback){
-    calculate(call,callback,"divide");
-}
-
-function calculate(call,callback,operation){
-    console.log ("calculate");
-
-    try {
-        var num1 = parseInt(call.request.num1);
-        var num2 = parseInt(call.request.num2);
-        var result;
-        var dividedByZero = false;
-        var message;
-        // assigning message may be moved or overwriten inside switch
-        // if different messages are needed for different opertaion 
-        message = [
-                    "Please specify two numbers",
-                    "An  error occured during computation",
-                    "Can't divide by 0"
-                ];
-                console.log(operation+" "+num1+" "+num2);
-        switch (operation) {
-            case "subtract" :
-                result = num1-num2;
-                break;
-            case "multiply" :
-                result = num1*num2;
-                break;
-            case "divide" :
-                if(num2===0){
-                    dividedByZero = true;
-                }
-                else
-                    result = num1/num2;
-                break;
-            default: // "add":
-                result = num1+num2;
-
-                break;
-
-        }
-        console.log(num1+" "+num2+" "+result);
-        if (dividedByZero){
-            callback(null,{message: message[2]});
-        }
-        else if (!isNaN(num1) && !isNaN(num2)){
-    
-            callback(null,{result: result,message: undefined }); 
-        }
-        
-        else {
-            callback(null,{message: message[0]});
-            // console.log(message[0]);
-    
+    const deviceID = call.request.deviceID;
+    var IDParts = deviceID.split('-');
+    var confirm = false;
+    // sprinkler shoul have 3 parts of id
+    if (IDParts.length == 3){
+        const area = IDParts[1];
+        const sprinklerNo = IDParts[2];
+        if (soil_sprinklers[area]){
+            if(soil_sprinklers[area][sprinklerNo]){
+                soil_sprinklers[area][sprinklerNo].waterOn = true;
+                confirm = true;
+            }
         }
     }
-    catch (e) {
-        callback(null,{message: message[1]});
-        
-    }
-   
+    callback(null, {confirm: confirm});
+
+
 }
+
 
 var server = new grpc.Server();
 server.addService(smart_farm_proto.SoilIrrigationService.service,{

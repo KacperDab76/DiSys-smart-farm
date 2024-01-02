@@ -115,7 +115,7 @@ service SoilIrrigationService{
     // sensors sends reading if reading is low server sends turn on water for that are (and off)
     rpc sensorReading (stream SoilCondition) returns (ServerMessage);
     // sprinkler sends message that it's on and waits for turn off message
-    rpc turnOnOffWater (SprinklerOn) returns (TurnOffReply); 
+    rpc turnOnOffWater (SprinklerOn) returns (ConfirmOnOffWater); 
 }
 
 // this is for all services
@@ -156,9 +156,10 @@ message ServerMessage{
     string task = 1;
 }
 message SprinklerOn{
-    bool turned_on = 1;
+    bool water_on = 1;
+    string deviceID = 2;
 }
-message TurnOffReply{
-    bool turn_off = 1;
+message ConfirmOnOffWater{
+    bool confirm = 1;
 } 
 // #endfile 
