@@ -2,7 +2,13 @@ var grpc = require("@grpc/grpc-js");
 var protoLoader = require("@grpc/proto-loader");
 var PROTO_PATH = __dirname+"/proto/smart_farm.proto";
 var packageDefinition = protoLoader.loadSync(
-    PROTO_PATH
+    PROTO_PATH,
+    {keepCase: true,
+     longs: String,
+     enums: String,
+     defaults: true,
+     oneofs: true
+    }
 );
 
 var smart_farm_proto = grpc.loadPackageDefinition(packageDefinition).farm;
@@ -26,6 +32,14 @@ var soil_areas  = [
     {"name": "field 2"},
     {"name": "wheat field"}
 ];
+
+const printDebug = true;
+
+function print(message){
+    if (printDebug)
+    console.log(message);
+}
+
 console.log("I'm a smart farm server");
 function registerDevice(call){
     console.log("register device");
@@ -48,6 +62,13 @@ function registerDevice(call){
             // register if no sensor registered for that area
             if (soil_sensors[area]){
                 // sensor already registered
+                // check if connection is active
+                try {console.log("try");
+                        soil_sensors[area].call.write({task:9, message: "connection active" });
+                }
+                catch (er){
+                    console.log(" not active");
+                }
                 var reply = {task: 0,deviceID: null,message: "only one sensor per area"};
                 console.log(reply);
                 call.write(reply);  // not registered for service
@@ -75,13 +96,38 @@ function registerDevice(call){
 }
 function sensorReading(call,callback){
     call.on("data",(reading)=>{
+        // console.log("data received");
+        // console.log(reading);
         console.log(reading.soil_humidity);
     });
-    call.on("end", ()=>{callback(null,{task: 1})});
+    call.on("end", ()=>{
+        console.log("end of sensor data");
+        callback(null,{task: 1});
+    });
     call.on("error",(err)=> {console.log(err);});
 
     
 }
+//cancel registration
+function cancelRegistration(call, callback) {
+    // remove device from array of devices
+    const deviceID = call.request.deviceID;
+    print(`unregistering ${deviceID}`);
+    var IDParts = deviceID.split('-');
+    if (IDParts.length > 2){
+        // code for sprinkler
+         const areaID = IDParts[1];
+         const sprinklerNo = IDParts[2];
+        soil_sprinklers[areaID][sprinklerNo] = null; 
+    }
+    else if (IDParts.length == 2){
+        const areaID = IDParts[1];
+
+        soil_sensors[areaID] = undefined;
+    }
+    callback(null, {status: 0, deviceID: deviceID});
+}
+
 // sprinkler sends info that water is on
 function turnOnOffWater(call,callback){
     // use callback to send back message
@@ -166,6 +212,7 @@ function calculate(call,callback,operation){
 var server = new grpc.Server();
 server.addService(smart_farm_proto.SoilIrrigationService.service,{
     registerDevice: registerDevice,
+    cancelRegistration: cancelRegistration,
     sensorReading : sensorReading,
     turnOnOffWater: turnOnOffWater
 });

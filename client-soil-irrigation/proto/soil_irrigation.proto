@@ -7,6 +7,9 @@ service SoilIrrigationService{
     // sensors and sprinklers must register for area they are 
     // server can use his srteam to turn sprinkers on
     rpc registerDevice (RegisterArea) returns (stream ServerRequest);
+    // cancel registration
+    rpc cancelRegistration (Device) returns (DeviceUnregistered);
+
     // sensors sends reading if reading is low server sends turn on water for that are (and off)
     rpc sensorReading (stream SoilCondition) returns (ServerMessage);
     // sprinkler sends message that it's on and waits for turn off message
@@ -36,7 +39,17 @@ message ServerRequest{
 
 }
 message SoilCondition{
-    uint32 soil_humidity = 1;
+    uint32 areaID = 1;
+    // uint32 soil = 2;
+    uint32 soil_humidity = 2;
+    
+}
+message Device {
+    string deviceID = 1;
+}
+message DeviceUnregistered {
+    uint32 status = 1;
+    string deviceID = 2;
 }
 message ServerMessage{
     string task = 1;
