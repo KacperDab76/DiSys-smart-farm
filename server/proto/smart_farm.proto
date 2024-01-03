@@ -8,17 +8,28 @@ service GreenhouseService {
     rpc registerGreenhouse (RegisterGreenhouse) returns (stream ServerRequest);
     // greenhouse device sends sensors mesurements and receives new climate settings if neccesery
     // for example if temp is too low (also include CO2 levels)
-    rpc getClimateSetting (stream SensorMeasurements) returns (stream ClimateSetting);
+    rpc getClimateSetting (stream SensorReadings) returns (stream ClimateSetting);
 }
 
 message RegisterGreenhouse {
+    string greenhouse = 1;
 
 }
-message SensorMeasurements {
-
+message SensorReadings {
+    string deviceID = 1;
+    uint32 air_humidity = 2;
+    uint32 soil_moisture = 3;
+    uint32 co2 = 4;
+    uint32 temp = 5;
+    uint32 light = 6;
 }
 message ClimateSetting {
-
+    string deviceID = 1;
+    uint32 air_humidity_on = 2;
+    uint32 soil_moisture_on = 3;
+    uint32 co2_on = 4;
+    uint32 temp_on = 5;
+    uint32 light_on = 6; 
 }
 // #endfile
 

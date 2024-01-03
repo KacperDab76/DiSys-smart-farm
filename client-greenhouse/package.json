@@ -1,0 +1,15 @@
+{
+  "name": "client-greenhouse",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "node app.js show"
+  },
+  "author": "kacper dabrowski",
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.9.13",
+    "@grpc/proto-loader": "^0.7.10"
+  }
+}

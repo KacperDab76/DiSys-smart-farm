@@ -72,7 +72,7 @@ function registerDevice(call){
             if (soil_sensors[area]){
                 // sensor already registered
                 // check if connection is active
-                try {console.log("try");
+                try {print("try");
                         soil_sensors[area].call.write({task:9, message: "connection active" });
                 }
                 catch (er){
@@ -191,13 +191,112 @@ function turnOnOffWater(call,callback){
 
 }
 
+// Greenhouse functions and variables
+var greenhouses = [];
+var defaultClimateLevels = {
+    air_humidity: 80,
+    soil_moisture: 50,
+    co2: 1000,
+    temp: 25,
+    light: 120
+}
+var defaultClimateSettings = {
+    // 0 means off 
+    air_humidity_on: 0,
+    soil_moisture_on: 0,
+    co2_on: 0,
+    temp_on: 0,
+    light_on: 0
+}
+function registerGreenhouse(call){
+    const device = call.request.greenhouse;
+
+    if (device == "greenhouse"){
+        // register as greenhouse
+        const greenhouseNo = greenhouses.length;
+        var deviceID = "greenhouse"+"-"+greenhouseNo;
+        var sensorsReading = {};
+        var climateLevels = JSON.parse(JSON.stringify(defaultClimateLevels));
+        var climateSettings = JSON.parse(JSON.stringify(defaultClimateSettings));
+        var newGreenhouse  = {
+            deviceID: deviceID,
+            call: call,
+            sensorsReading: sensorsReading,
+            climateLevels: climateLevels,
+            climateSettings: climateSettings
+
+        }
+        greenhouses.push(newGreenhouse);
+
+        call.write({task:1,deviceID: deviceID}); //registered
+        setTimeout(()=>{
+            //ask for sensor readings
+            call.write({task:2,deviceID: deviceID});
+        },3000);
+    }
+}
+
+function getClimateSetting(call){
+    call.on("data",(sensorsReading)=>{
+
+        print(sensorsReading);
+        var deviceID = sensorsReading.deviceID;
+        var IDParts = deviceID.split("-");
+        var greenhouseNo = IDParts[1];
+        // overwrite previous reading
+        // compare with desired levels 
+        // and act if level are wrong
+        var greenhouse = greenhouses[greenhouseNo];
+        greenhouse.sensorsReading.air_humidity =  sensorsReading.air_humidity;
+        greenhouse.sensorsReading.soil_moisture = sensorsReading.soil_moisture;
+        greenhouse.sensorsReading.co2 = sensorsReading.co2;
+        greenhouse.sensorsReading.temp = sensorsReading.temp;
+        greenhouse.sensorsReading.light = sensorsReading.light;
+        //print(greenhouse.sensorsReading);
+        var changed = false;
+        for (const readingName in greenhouse.sensorsReading){
+            // print(reading);
+            var reading = greenhouse.sensorsReading[readingName] ;
+            var level = greenhouse.climateLevels[readingName];
+            if(reading < level){
+                changed = true;
+                var setting = (level!=0)?Math.floor((level-reading)/level*100):50;
+                greenhouse.climateSettings[`${readingName}_on`] = setting;
+            }else {
+                greenhouse.climateSettings[`${readingName}_on`] = 0;
+            }
+        }
+        if (changed){
+            // send new settings to greenhouse
+            print(greenhouse.climateSettings);
+            call.write({...{deviceID: deviceID},...greenhouse.climateSettings});
+        }
+
+    });
+
+    call.on("end",()=>{
+        //print(greenhouse);
+        call.end();
+    });
+    
+    call.on("error",(err)=>{
+        console.log("error occured "+err);
+    });
+}
+
 
 var server = new grpc.Server();
+// sOil Irrigation sevice
 server.addService(smart_farm_proto.SoilIrrigationService.service,{
     registerDevice: registerDevice,
     cancelRegistration: cancelRegistration,
     sensorReading : sensorReading,
     turnOnOffWater: turnOnOffWater
+});
+// GReenhouse Service
+server.addService(smart_farm_proto.GreenhouseService.service,{
+    registerGreenhouse: registerGreenhouse,
+    getClimateSetting: getClimateSetting
 });
 
 server.bindAsync("0.0.0.0:40000",grpc.ServerCredentials.createInsecure(), () => {server.start();});

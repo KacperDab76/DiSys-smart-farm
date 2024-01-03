@@ -3,7 +3,7 @@ var grpc = require("@grpc/grpc-js");
 var protoLoader = require("@grpc/proto-loader");
 const { waitForDebugger } = require("inspector");
 const { callbackify } = require("util");
-var PROTO_PATH = __dirname+"/proto/soil_irrigation.proto";
+var PROTO_PATH = __dirname+"/proto/greenhouse.proto";
 var packageDefinition = protoLoader.loadSync(
     PROTO_PATH,
     {keepCase: true,
@@ -17,12 +17,12 @@ var packageDefinition = protoLoader.loadSync(
 var smart_farm_proto = grpc.loadPackageDefinition(packageDefinition).farm;
 
 
-var client = new smart_farm_proto.SoilIrrigationService('localhost:40000',grpc.credentials.createInsecure());
+var client = new smart_farm_proto.GreenhouseService('localhost:40000',grpc.credentials.createInsecure());
 
-var device = "soil_sprinkler";
-var area = 0;
+var device = "greenhouse";
 var deviceID;
-var waterOn = false;
+var send_interval = 5000;
+// var waterOn = false;
 
 
 var printDebug = false;
@@ -32,24 +32,22 @@ function print(message){
     console.log(message);
 }
 
-if (process.argv[2]){
-    var areaNumber = parseInt(process.argv[2]);
-    if (!isNaN(areaNumber))
-        area = areaNumber;
-    
-}
-if (process.argv[3] == "show"){
+
+if (process.argv[2] == "show"){
     printDebug = true;
 }
-console.log("Sprinkler for area "+area);
+console.log(" Greenhouse ");
 
+function randomReading(maxValue){
+    return Math.floor(Math.random()*maxValue);
+}
 
 function main() {
             
             try{
                 //console.log("try");
                     // change to call.on("data",...)
-                var call = client.registerDevice({areaID: area, device: device});
+                var call = client.registerGreenhouse({greenhouse: device});
                     call.on("data",(response)=>{
                         //console.log(response);
                         try {
@@ -58,11 +56,12 @@ function main() {
                             print(response);
                             if(task != 0){
 
-                                deviceID = response.deviceID;
+                                
                                 
                                 switch (task){
                                     case 1:
-                                        console.log("sprinkler registered ID: "+deviceID);
+                                        deviceID = response.deviceID;
+                                        console.log("Greenhouse registered ID: "+deviceID);
                                         // wait for task 2 - tun on sprnkler
                                         // 0r 3 - turn of sprinkler 
                                         break;
@@ -70,22 +69,11 @@ function main() {
                                         console.log("not registerd");
                                         break;
                                     case 2:
-                                        // turn water on
-                                        client.turnOnOffWater({water_on: true,deviceID: deviceID},(err,reply)=>{
-                                            // confirmation ? 
-                                        });
-                                        waterOn = true;
-                                        console.log("Water on");
+                                        // start sending sensor readings
+                                        // readings are random
+                                        sendSensorsReadings();                                       
                                         break;
-                                    case 3:
-                                        // turn water off
-                                        client.turnOnOffWater({water_on: false,deviceID: deviceID},(err,reply)=>{
-                                            // confirmation ? 
-                                        });
-                                        waterOn = false;
-                                        console.log("Water off");
-
-                                        break;    
+                                     
                                     default:
                                         print("Task unknown");
 
@@ -116,15 +104,37 @@ function main() {
             }
         
 }
-// catch ctrl-C to cancel registration
-process.on('SIGINT',()=>end());
-function end(){
-    print("end");
-    client.cancelRegistration({deviceID: deviceID},(err,reply)=> {
-        print(reply);
-        //stop regardless
-        console.log("good bye");
-    });
-    setTimeout(()=>{process.exit(0)},1000);
+function getSensorReading() {
+    return  {
+        deviceID: deviceID,
+        air_humidity: randomReading(100),
+        soil_moisture: randomReading(100),
+        co2: randomReading(2000),
+        temp : randomReading(80),
+        light : randomReading(300)
+    }
 }
+function sendSensorsReadings() {
+    
+    var call = client.getClimateSetting();
+
+    setInterval(()=>{
+
+            call.write(getSensorReading());
+        },send_interval
+    );
+
+    call.on("data",(response)=>{
+        print(response);
+    });
+
+    call.on("end",()=>{
+        call.end();
+    });
+    
+    call.on("error",(err)=>{
+        console.log("error occured "+err);
+    });
+}
+
 main();

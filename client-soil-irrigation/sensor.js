@@ -30,18 +30,21 @@ const sensorData = [
         [10,12,34,53,71,23,35,46,75,45,12,34,89,76,65,56,45,34,23,45,71]
     ];
 const interval = 1000;
-const printDebug = false;
+var printDebug = false;
 
 function print(message){
     if (printDebug)
     console.log(message);
 }
-
+var show_position = 3;
 if (process.argv[2]){
     var areaNumber = parseInt(process.argv[2]);
     if (!isNaN(areaNumber))
         area = areaNumber;
     
+}
+if (process.argv[show_position] == "show"){
+    printDebug = true;
 }
 console.log("Sensor for area "+area);
 

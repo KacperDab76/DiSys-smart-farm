@@ -1,3 +1,5 @@
 ~*.*
 *.py
+*.sh
+*.ps1
 node_modules
