@@ -68,7 +68,7 @@ function main() {
                                         break;
                                     case 2:
                                         // turn water on
-                                        client.turnOnOffWater({water_on: true},(err,reply)=>{
+                                        client.turnOnOffWater({water_on: true,deviceID: deviceID},(err,reply)=>{
                                             // confirmation ? 
                                         });
                                         waterOn = true;
@@ -76,7 +76,7 @@ function main() {
                                         break;
                                     case 3:
                                         // turn water off
-                                        client.turnOnOffWater({water_on: false},(err,reply)=>{
+                                        client.turnOnOffWater({water_on: false,deviceID: deviceID},(err,reply)=>{
                                             // confirmation ? 
                                         });
                                         waterOn = false;

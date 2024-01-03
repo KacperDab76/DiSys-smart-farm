@@ -115,8 +115,10 @@ function sensorReading(call,callback){
             const area = reading.areaID;
             if (soil_sprinklers[area]){
                 for (sprinkler of soil_sprinklers[reading.areaID]){
-                    print(`turn on ${sprinkler.deviceID}`);
-                    sprinkler.call.write({task: 2,deviceID: sprinkler.deviceID});
+                    if(!sprinkler.waterOn){
+                        print(`turn on ${sprinkler.deviceID}`);
+                        sprinkler.call.write({task: 2,deviceID: sprinkler.deviceID});
+                    }
                 }
             }
         }
@@ -126,7 +128,7 @@ function sensorReading(call,callback){
             const area = reading.areaID;
             if (soil_sprinklers[area]){
                 for (sprinkler of soil_sprinklers[area]){
-                    print(sprinkler);
+                    print(sprinkler.deviceID);
                     if(sprinkler.waterOn){
 
                         print(`turn off ${sprinkler}`);
@@ -168,15 +170,18 @@ function cancelRegistration(call, callback) {
 function turnOnOffWater(call,callback){
     // use callback to send back message
     const deviceID = call.request.deviceID;
+    const waterStatus = call.request.water_on;
     var IDParts = deviceID.split('-');
     var confirm = false;
+    print(`from ${deviceID} water ${waterStatus} `);
     // sprinkler shoul have 3 parts of id
     if (IDParts.length == 3){
         const area = IDParts[1];
         const sprinklerNo = IDParts[2];
         if (soil_sprinklers[area]){
             if(soil_sprinklers[area][sprinklerNo]){
-                soil_sprinklers[area][sprinklerNo].waterOn = true;
+                print("water "+waterStatus);
+                soil_sprinklers[area][sprinklerNo].waterOn = waterStatus;
                 confirm = true;
             }
         }
