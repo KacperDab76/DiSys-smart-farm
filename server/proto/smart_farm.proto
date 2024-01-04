@@ -66,9 +66,11 @@ service userAppService {
     // request list of GreenHouses
     rpc getGreenhouses (GreenhouseListRequest) returns (stream Greenhouse);
     // get data from sensors in greenhouse
-    rpc getGreenhouseData (Greenhouse) returns (stream SensorMeasurments);
+    rpc getGreenhouseData (Greenhouse) returns (SensorReadings);
     // get climate settings from greenhouse - and send new settings if necessary
-    rpc getGreenhouseClimate (Greenhouse) returns (ClimateSettings);
+    rpc getGreenhouseClimate (Greenhouse) returns (ClimateSetting);
+    // settings for climate settings
+    rpc getGreenhouseSettings (Greenhouse) returns (SensorReadings);
     // get list of areas with soil 
     rpc getSoilAreas (AreaListRequest) returns (stream Area);
     // get data of soil moisture in area
@@ -87,11 +89,17 @@ service userAppService {
     rpc getRecordedTasks (Vehicle) returns (stream VehicleTask); 
 }
 
-message RegisterApp{}
-message Registered{}
+message RegisterApp{
+    string user_name = 1;
+}
+message Registered{
+    string deviceID = 1;
+}
 message GreenhouseListRequest{}
-message Greenhouse{}
-message SensorMeasurments{}
+message Greenhouse{
+    string greenhouseID = 1;
+}
+
 message ClimateSettings{}
 message AreaListRequest{}
 message Area{}

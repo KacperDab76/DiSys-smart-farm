@@ -239,7 +239,7 @@ function registerGreenhouse(call){
 function getClimateSetting(call){
     call.on("data",(sensorsReading)=>{
 
-        print(sensorsReading);
+        //print(sensorsReading);
         var deviceID = sensorsReading.deviceID;
         var IDParts = deviceID.split("-");
         var greenhouseNo = IDParts[1];
@@ -268,7 +268,7 @@ function getClimateSetting(call){
         }
         if (changed){
             // send new settings to greenhouse
-            print(greenhouse.climateSettings);
+            // print(greenhouse.climateSettings);
             call.write({...{deviceID: deviceID},...greenhouse.climateSettings});
         }
 
@@ -284,6 +284,39 @@ function getClimateSetting(call){
     });
 }
 
+// functions for user app
+var userApp = [];
+function registerUserApp(call,callback){
+    print("register user app");
+    const user = call.request.user_name;
+    var deviceID = "userApp-"+userApp.length;
+    console.log(`user ${user} deviceID ${deviceID}`);
+    userApp.push({deviceID: deviceID,user: user});
+
+    callback(null,{deviceID: deviceID});
+}
+
+function getGreenhouses(call){
+    print("get greenhouses");
+    for(const greenhouse of greenhouses){
+        print(greenhouse.deviceID);
+        call.write({greenhouseID: greenhouse.deviceID});
+    }
+    call.end();
+}
+
+function getGreenhouseData(call,callback){
+    print("greenhouse data requsted");
+    const greenhouseID = call.request.greenhouseID;
+    var greenhouseNo = greenhouseID.split("-")[1];
+    print(greenhouseNo);
+
+    if (greenhouses[greenhouseNo]){
+        print("sensor readings");
+        print(greenhouses[greenhouseNo].sensorsReading);
+        callback(null,{deviceID: greenhouseID,...greenhouses[greenhouseNo].sensorsReading});
+    }
+}
 
 var server = new grpc.Server();
 // sOil Irrigation sevice
@@ -297,6 +330,13 @@ server.addService(smart_farm_proto.SoilIrrigationService.service,{
 server.addService(smart_farm_proto.GreenhouseService.service,{
     registerGreenhouse: registerGreenhouse,
     getClimateSetting: getClimateSetting
+});
+
+// user App Service - GUI
+server.addService(smart_farm_proto.userAppService.service,{
+    registerUserApp: registerUserApp,
+    getGreenhouses: getGreenhouses,
+    getGreenhouseData: getGreenhouseData
 });
 
 server.bindAsync("0.0.0.0:40000",grpc.ServerCredentials.createInsecure(), () => {server.start();});

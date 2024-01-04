@@ -1,16 +1,22 @@
+syntax = "proto3";
+
+package farm;
+
 service userAppService {
     // Registering user app 
     rpc registerUserApp (RegisterApp) returns (Registered);
     // request list of GreenHouses
     rpc getGreenhouses (GreenhouseListRequest) returns (stream Greenhouse);
     // get data from sensors in greenhouse
-    rpc getGreenhouseData (Greenhouse) returns (stream SensorMeasurments);
-    // get climate settings from greenhouse - and send new settings if necessary
-    rpc getGreenhouseClimate (Greenhouse) returns (ClimateSettings);
+    rpc getGreenhouseData (Greenhouse) returns (SensorReadings);
+    // settings for climate settings
+    rpc getGreenhouseSettings (Greenhouse) returns (SensorReadings);
+    // get climate levels from greenhouse - and send new settings if necessary
+    rpc getGreenhouseClimate (Greenhouse) returns (ClimateSetting);
     // get list of areas with soil 
     rpc getSoilAreas (AreaListRequest) returns (stream Area);
     // get data of soil moisture in area
-    rpc getSoilData (Area) returns (SoilConditions);
+    rpc getSoilData (Area) returns (SoilCondition);
     // get status (on/off) of sprinklers in area
     rpc getSprinklerStatus (Area) returns (SprinklerStatus);
     // get status of sprinklers in all areas
@@ -22,5 +28,55 @@ service userAppService {
     // set vehicle route and task
     rpc setVehicleTask (VehicleTask) returns (stream VehicleStatus);
     // get list of finished tasks by vehicle
-    rpc getRecordedTasks (Vehicle) returns (stream Task); 
+    rpc getRecordedTasks (Vehicle) returns (stream VehicleTask); 
+}
+
+message RegisterApp{
+    string user_name = 1;
+}
+message Registered{
+    string deviceID = 1;
+}
+message GreenhouseListRequest{}
+message Greenhouse{
+    string greenhouseID = 1;
+}
+message SensorReadings {
+    string deviceID = 1;
+    uint32 air_humidity = 2;
+    uint32 soil_moisture = 3;
+    uint32 co2 = 4;
+    uint32 temp = 5;
+    uint32 light = 6;
+}
+message ClimateSetting {
+    string deviceID = 1;
+    uint32 air_humidity_on = 2;
+    uint32 soil_moisture_on = 3;
+    uint32 co2_on = 4;
+    uint32 temp_on = 5;
+    uint32 light_on = 6; 
+}
+message AreaListRequest{}
+message Area{}
+message SoilCondition{
+    uint32 areaID = 1;
+    uint32 soil_humidity = 2;
+}
+message SprinklerStatus{}
+message SprinklersStatusRequest{}
+message VehicleListRequest{}
+message Vehicle{}
+message VehicleTask{}
+message VehicleStatus{}
+message Task{}
+// #endfile
+message Position {
+    uint32 coordinateX = 1;
+    uint32 coordinateY = 2;
+}
+
+message RemoteMessage {
+
+    string job  = 2;
 }
