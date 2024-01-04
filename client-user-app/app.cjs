@@ -101,12 +101,28 @@ function getGreenhouseInfo(req,res){
             case 2:
                 
                 client.getGreenhouseClimate({greenhouseID: greenhouseID},(err,reply)=>{
-
+                    if (err){
+                        print("error");
+                        res.send({message: `server error $(err)`});
+                    }else {
+                        print("reply");
+                        print(reply);
+                        res.send(reply);
+                    }
                 });
+                break;
             case 3:
                 client.getGreenhouseSettings({greenhouseID: greenhouseID},(err,reply)=>{
-
+                    if (err){
+                        print("error");
+                        res.send({message: `server error $(err)`});
+                    }else {
+                        print("reply");
+                        print(reply);
+                        res.send(reply);
+                    }
                 });
+                break;
             default:
                 res.send({message: "unknown info type"});            
         }
@@ -117,6 +133,31 @@ function getGreenhouseInfo(req,res){
         res.send({error: err});
     }
 
+}
+// soil irrigation 
+function getSoilAreas(res){
+    print("get soil area");
+    var areas = [];
+    var call = client.getSoilAreas({});
+    call.on("data",(response)=>{
+        try {
+            // print("answer");
+            var area = {areaID: response.areaID,name: response.name};
+            areas.push(area);
+        }
+        catch (err){
+          console.log("error fetching soil areas");  
+        }
+    });
+    call.on("end",()=>{
+        print("end");
+        print(areas);
+
+        res.send({areas: areas});
+    });
+    call.on("error",(err)=>{
+        res.send({areas: ["No data available"]});
+    });
 }
 // express gets call from frontend - svelte
 
@@ -134,10 +175,17 @@ app.get('/greenhouses',(req,res) =>{
     getGreenhouses(res);
 });
 
-
 app.get('/greenhouseInfo',(req,res) =>{
     getGreenhouseInfo(req,res);
 });
+app.get('/soilareas',(req,res) =>{
+    getSoilAreas(res);
+});
+
+app.get('/soilareasInfo',(req,res) =>{
+    getGreenhouseInfo(req,res);
+});
+
 app.use(express.static('public'));
 app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
@@ -145,4 +193,4 @@ app.get('*', (req, res) => {
 
 app.listen(port, () => {
   console.log(`User app client for smarat farm listening on port ${port}`)
-})
+}) 

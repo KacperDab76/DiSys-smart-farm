@@ -312,9 +312,34 @@ function getGreenhouseData(call,callback){
     print(greenhouseNo);
 
     if (greenhouses[greenhouseNo]){
-        print("sensor readings");
-        print(greenhouses[greenhouseNo].sensorsReading);
+        // print("sensor readings");
+        // print(greenhouses[greenhouseNo].sensorsReading);
         callback(null,{deviceID: greenhouseID,...greenhouses[greenhouseNo].sensorsReading});
+    }
+}
+
+function getGreenhouseSettings(call,callback){
+    print("greenhouse data requsted");
+    const greenhouseID = call.request.greenhouseID;
+    var greenhouseNo = greenhouseID.split("-")[1];
+    print(greenhouseNo);
+
+    if (greenhouses[greenhouseNo]){
+        // print("sensor readings");
+        // print(greenhouses[greenhouseNo].climateSettings);
+        callback(null,{deviceID: greenhouseID,...greenhouses[greenhouseNo].climateSettings});
+    }
+}
+function getGreenhouseClimate(call,callback){
+    print("greenhouse data requsted");
+    const greenhouseID = call.request.greenhouseID;
+    var greenhouseNo = greenhouseID.split("-")[1];
+    print(greenhouseNo);
+
+    if (greenhouses[greenhouseNo]){
+        // print("sensor readings");
+        // print(greenhouses[greenhouseNo].climateLevels);
+        callback(null,{deviceID: greenhouseID,...greenhouses[greenhouseNo].climateLevels});
     }
 }
 
@@ -336,7 +361,9 @@ server.addService(smart_farm_proto.GreenhouseService.service,{
 server.addService(smart_farm_proto.userAppService.service,{
     registerUserApp: registerUserApp,
     getGreenhouses: getGreenhouses,
-    getGreenhouseData: getGreenhouseData
+    getGreenhouseData: getGreenhouseData,
+    getGreenhouseClimate: getGreenhouseClimate,
+    getGreenhouseSettings: getGreenhouseSettings
 });
 
 server.bindAsync("0.0.0.0:40000",grpc.ServerCredentials.createInsecure(), () => {server.start();});

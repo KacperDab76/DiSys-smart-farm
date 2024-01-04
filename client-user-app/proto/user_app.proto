@@ -10,9 +10,9 @@ service userAppService {
     // get data from sensors in greenhouse
     rpc getGreenhouseData (Greenhouse) returns (SensorReadings);
     // settings for climate settings
-    rpc getGreenhouseSettings (Greenhouse) returns (SensorReadings);
+    rpc getGreenhouseSettings (Greenhouse) returns (ClimateSetting);
     // get climate levels from greenhouse - and send new settings if necessary
-    rpc getGreenhouseClimate (Greenhouse) returns (ClimateSetting);
+    rpc getGreenhouseClimate (Greenhouse) returns (SensorReadings);
     // get list of areas with soil 
     rpc getSoilAreas (AreaListRequest) returns (stream Area);
     // get data of soil moisture in area
@@ -58,7 +58,10 @@ message ClimateSetting {
     uint32 light_on = 6; 
 }
 message AreaListRequest{}
-message Area{}
+message Area{
+    string areaID = 1;
+    string name = 2;
+}
 message SoilCondition{
     uint32 areaID = 1;
     uint32 soil_humidity = 2;

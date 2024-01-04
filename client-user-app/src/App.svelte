@@ -63,7 +63,7 @@
 		background-color: white;
 		color: blueviolet;
 		border-radius: 10px;
-		border: solid red 2px;
+		border: solid blueviolet 2px;
 	}
 
 	#container {
