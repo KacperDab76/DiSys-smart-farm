@@ -78,7 +78,7 @@ service userAppService {
     // get status (on/off) of sprinklers in area
     rpc getSprinklerStatus (Area) returns (SprinklerStatus);
     // get status of sprinklers in all areas
-    rpc getAllSprinklersStatus (SprinklersStatusRequest) returns (stream SprinklerStatus);
+    rpc getAllSprinklersStatus (Area) returns (stream SprinklerOn);
     // turn on or off sprinkler in area
     rpc turnOnOffSprinkler (Area) returns (SprinklerStatus);
     // get the list of vehicles

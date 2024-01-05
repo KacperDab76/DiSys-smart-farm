@@ -1,4 +1,5 @@
 var grpc = require("@grpc/grpc-js");
+const { ServerDuplexStreamImpl } = require("@grpc/grpc-js/build/src/server-call");
 var protoLoader = require("@grpc/proto-loader");
 var PROTO_PATH = __dirname+"/proto/smart_farm.proto";
 var packageDefinition = protoLoader.loadSync(
@@ -79,7 +80,7 @@ function registerDevice(call){
                     console.log(" not active");
                 }
                 var reply = {task: 0,deviceID: null,message: "only one sensor per area"};
-                console.log(reply);
+                print(reply);
                 call.write(reply);  // not registered for service
                 call.end();
                 console.log("not registering device");
@@ -108,7 +109,11 @@ function sensorReading(call,callback){
         // console.log("data received");
         // console.log(reading);
         print(reading.soil_humidity);
-
+        // change data in table
+        var areaNo = reading.areaID.split("-")[1];
+        if (soil_sensors[areaNo]){
+            soil_sensors[areaNo].humidity = reading.soil_humidity;
+        }
         if (reading.soil_humidity < humidity_level){
             // turn on sprinklers
             print(`turn on sprinklers for area ${reading.areaID}`);
@@ -342,6 +347,35 @@ function getGreenhouseClimate(call,callback){
         callback(null,{deviceID: greenhouseID,...greenhouses[greenhouseNo].climateLevels});
     }
 }
+// function sends stream of available areas of soil iriigation
+function getSoilAreas(call){
+    print("get soil areas");
+    for(const [index,area] of soil_areas){
+        print(area.name);
+        const areaID = "soil-"+index;
+        call.write({areaID: areaID,name: area.name});
+    }
+    call.end();
+}
+
+function getSoilData(call,callback){
+    const areaID = call.request.areaID;
+    var areaNo = areaID.split("-")[1];
+
+    if(soil_sensors[areaNo]){
+        callback(null,{areaID: areaID,soil_humidity: soil_sensors[areaNo].humidity});
+    }
+}
+
+function getAllSprinklersStatus(call){
+    print("get sprinklers");
+    for(const device of soil_sprinklers){
+        print(device.deviceID);
+
+        call.write({deviceID: device.deviceID,water_on: device.waterOn});
+    }
+    call.end();
+}
 
 var server = new grpc.Server();
 // sOil Irrigation sevice
@@ -363,7 +397,10 @@ server.addService(smart_farm_proto.userAppService.service,{
     getGreenhouses: getGreenhouses,
     getGreenhouseData: getGreenhouseData,
     getGreenhouseClimate: getGreenhouseClimate,
-    getGreenhouseSettings: getGreenhouseSettings
+    getGreenhouseSettings: getGreenhouseSettings,
+    getSoilAreas: getSoilAreas,
+    getSoilData: getSoilData,
+    getAllSprinklersStatus: getAllSprinklersStatus
 });
 
 server.bindAsync("0.0.0.0:40000",grpc.ServerCredentials.createInsecure(), () => {server.start();});

@@ -87,6 +87,7 @@ function getGreenhouseInfo(req,res){
         print(infoType);
         switch (infoType) {
             case 1 :
+                // get sensors reading from greenhouse
                 client.getGreenhouseData({greenhouseID: greenhouseID},(err,reply)=>{
                     if (err){
                         print("error");
@@ -99,7 +100,7 @@ function getGreenhouseInfo(req,res){
                 });
                 break;
             case 2:
-                
+                // get levels set for climate of greenhouse
                 client.getGreenhouseClimate({greenhouseID: greenhouseID},(err,reply)=>{
                     if (err){
                         print("error");
@@ -112,6 +113,7 @@ function getGreenhouseInfo(req,res){
                 });
                 break;
             case 3:
+                // get settings of greenhouse 
                 client.getGreenhouseSettings({greenhouseID: greenhouseID},(err,reply)=>{
                     if (err){
                         print("error");
@@ -159,6 +161,66 @@ function getSoilAreas(res){
         res.send({areas: ["No data available"]});
     });
 }
+
+
+function getSoilAreaInfo(req,res){
+    try {
+        print("get area info");
+        let areaID = req.query.id;
+        let infoType = parseInt(req.query.type);
+        print(infoType);
+        switch (infoType) {
+            case 1 :
+                // get data from sensor
+                client.getSoilData({areaID: areaID},(err,reply)=>{
+                    if (err){
+                        print("error");
+                        res.send({message: `server error $(err)`});
+                    }else {
+                        print("reply");
+                        print(reply);
+                        res.send(reply);
+                    }
+                });
+                break;
+            case 2:
+                // get sprinklers data returns stream
+                var sprinklers = [];
+                var call = client.getAllSprinklersStatus({areaID: areaID});
+                call.on("data",(reply)=>{
+                    try {
+                        print("reply");
+                        print(reply);
+                        sprinklers.push({name: reply.deviceID,value: reply.water_on});
+
+                    }
+                    catch (err){
+
+                        print("error");
+                        res.send({message: `server error $(err)`});
+                    }
+                });
+                call.on("end",()=>{
+                    print("end");
+                    print(sprinklers);
+            
+                    res.send({sprinklers: sprinklers});
+                });
+                call.on("error",(err)=>{
+                    res.send({message: ["No data available"]});
+                });
+                break;
+            default:
+                res.send({message: "unknown info type"});            
+        }
+
+
+    }
+    catch(err) {
+        res.send({error: err});
+    }
+
+}
 // express gets call from frontend - svelte
 
 app.get('/add',(req,res) =>{
@@ -177,13 +239,13 @@ app.get('/greenhouses',(req,res) =>{
 
 app.get('/greenhouseInfo',(req,res) =>{
     getGreenhouseInfo(req,res);
-});
+}); 
 app.get('/soilareas',(req,res) =>{
     getSoilAreas(res);
 });
 
 app.get('/soilareasInfo',(req,res) =>{
-    getGreenhouseInfo(req,res);
+    getSoilAreaInfo(req,res);
 });
 
 app.use(express.static('public'));

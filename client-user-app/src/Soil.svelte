@@ -8,6 +8,7 @@
     // tmp
     sensors = [{name: "S1",value: 3}];
     sprinklers = [{name: "Sprinkler",value: 5}];
+
     async function getSoilAreas(){
         // alert("get them!!");
         const res = await fetch(`/soilareas`);
@@ -27,7 +28,7 @@
             // change to array of objects?
             var ret = [];
             for (const prop in response){
-                if (prop != "deviceID")
+                //if (prop != "deviceID")
                     ret.push({name: prop,value: response[prop]});
             }
             // console.log(ret);
