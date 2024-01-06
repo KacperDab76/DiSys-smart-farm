@@ -27,7 +27,7 @@
         const res = await fetch(`/soilareasInfo?id=${areaID}&type=${infoType}`);
 		const response = await res.json();
         if(res.ok){
-            console.log(response);
+            //console.log(response);
             // change to array of objects?
             var ret = [];
             if(response.length>0){
@@ -35,7 +35,7 @@
 
                     for (const prop in device){
                         //if (prop != "deviceID")
-                        console.log("prop "+prop+" rest"+device[prop]);
+                        //console.log("prop "+prop+" rest"+device[prop]);
                         ret.push({name: prop,value: device[prop]});
                     }
                 }

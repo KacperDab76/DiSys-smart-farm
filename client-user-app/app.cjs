@@ -25,7 +25,7 @@ var calc_proto = grpc.loadPackageDefinition(packageDefinition).farm;
 var client = new calc_proto.userAppService('localhost:40000', grpc.credentials.createInsecure());
 
 // functions for dev debugging
-var printDebug = true;
+var printDebug = false;
 
 function print(message){
     if (printDebug)

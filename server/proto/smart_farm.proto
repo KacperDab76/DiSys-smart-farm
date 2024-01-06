@@ -33,32 +33,6 @@ message ClimateSetting {
 }
 // #endfile
 
-
-// #file: client-remote-vehicle\proto\remote_vehicle.proto
-
-service RemoteVehicleService{
-    // register device for broadcasts
-    rpc registerDevice(RegisterVehicle) returns (stream ServerRequest);
-    // get information of where to go 
-    rpc getRoute (Position) returns (stream Position);
-    // what task to be done at position ie. harvesting appples, tomatos,sensor reading etc
-    rpc getTask (Position) returns (VehicleTask);
-    // save information of finished task
-    rpc recordTaskFinished (VehicleTask) returns (TaskSaved);
-    // send status like fuel and space left in harvest box to get message to go back home
-    rpc vehicleStatus (stream VehicleStatus) returns (GoHomeMessage);
-    // for drone route must be continous with tasks being part of the route
-    rpc getDroneRoute (stream Position) returns (stream PositionWithTask);
-} 
-
-message RegisterVehicle{}
-//message Position {}
-message VehicleTask{}
-message TaskSaved{}
-message VehicleStatus {}
-message GoHomeMessage {}
-message PositionWithTask {}
-// #endfile
 // #file: client-user-app\proto\user_app.proto
 service userAppService {
     // Registering user app 
@@ -75,18 +49,9 @@ service userAppService {
     rpc getSoilAreas (AreaListRequest) returns (stream Area);
     // get data of soil moisture in area
     rpc getSoilData (Area) returns (SoilCondition);
-    // get status (on/off) of sprinklers in area
-    rpc getSprinklerStatus (Area) returns (SprinklerStatus);
     // get status of sprinklers in all areas
     rpc getAllSprinklersStatus (Area) returns (stream SprinklerOn);
     // turn on or off sprinkler in area
-    rpc turnOnOffSprinkler (Area) returns (SprinklerStatus);
-    // get the list of vehicles
-    rpc getVehicles (VehicleListRequest) returns (stream Vehicle);
-    // set vehicle route and task
-    rpc setVehicleTask (VehicleTask) returns (stream VehicleStatus);
-    // get list of finished tasks by vehicle
-    rpc getRecordedTasks (Vehicle) returns (stream VehicleTask); 
 }
 
 message RegisterApp{
@@ -106,20 +71,10 @@ message Area{
     string areaID = 1;
     string name = 2;
 }
-//message SoilCondition{}
-message SprinklerStatus{}
-message SprinklersStatusRequest{}
-message VehicleListRequest{}
-message Vehicle{}
-//message VehicleTask{}
-//message VehicleStatus{}
-// message Vehicle{}
-//message Task{}
+
+
 // #endfile
-message Position {
-    uint32 coordinateX = 1;
-    uint32 coordinateY = 2;
-}
+
 
 message RemoteMessage {
 

@@ -36,7 +36,7 @@ var soil_areas  = [
     {"name": "wheat field"}
 ];
 
-const printDebug = true;
+const printDebug = false;
 
 function print(message){
     if (printDebug)

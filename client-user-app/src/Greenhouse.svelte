@@ -21,7 +21,7 @@
         const res = await fetch(`/greenhouseInfo?id=${greenhouseID}&type=${infoType}`);
 		const response = await res.json();
         if(res.ok){
-            console.log(response);
+            //console.log(response);
             // change to array of objects?
             var ret = [];
             for (const prop in response){

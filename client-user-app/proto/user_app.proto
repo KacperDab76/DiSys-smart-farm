@@ -17,18 +17,11 @@ service userAppService {
     rpc getSoilAreas (AreaListRequest) returns (stream Area);
     // get data of soil moisture in area
     rpc getSoilData (Area) returns (SoilCondition);
-    // get status (on/off) of sprinklers in area
-    rpc getSprinklerStatus (Area) returns (SprinklerStatus);
     // get status of sprinklers in all areas
     rpc getAllSprinklersStatus (Area) returns (stream SprinklerOn);
     // turn on or off sprinkler in area
-    rpc turnOnOffSprinkler (Area) returns (SprinklerStatus);
-    // get the list of vehicles
-    rpc getVehicles (VehicleListRequest) returns (stream Vehicle);
-    // set vehicle route and task
-    rpc setVehicleTask (VehicleTask) returns (stream VehicleStatus);
-    // get list of finished tasks by vehicle
-    rpc getRecordedTasks (Vehicle) returns (stream VehicleTask); 
+    // rpc turnOnOffSprinkler (Area) returns (SprinklerStatus);
+
 }
 
 message RegisterApp{
@@ -70,18 +63,7 @@ message SprinklerOn{
     bool water_on = 1;
     string deviceID = 2;
 }
-message SprinklerStatus{}
-message SprinklersStatusRequest{}
-message VehicleListRequest{}
-message Vehicle{}
-message VehicleTask{}
-message VehicleStatus{}
-message Task{}
-// #endfile
-message Position {
-    uint32 coordinateX = 1;
-    uint32 coordinateY = 2;
-}
+
 
 message RemoteMessage {
 
