@@ -109,15 +109,16 @@ function sensorReading(call,callback){
         // console.log("data received");
         // console.log(reading);
         print(reading.soil_humidity);
+        // print(reading);
         // change data in table
-        var areaNo = reading.areaID.split("-")[1];
-        if (soil_sensors[areaNo]){
-            soil_sensors[areaNo].humidity = reading.soil_humidity;
+        const area = reading.areaID;
+        if (soil_sensors[area]){
+            soil_sensors[area].humidity = reading.soil_humidity;
         }
         if (reading.soil_humidity < humidity_level){
             // turn on sprinklers
             print(`turn on sprinklers for area ${reading.areaID}`);
-            const area = reading.areaID;
+            
             if (soil_sprinklers[area]){
                 for (sprinkler of soil_sprinklers[reading.areaID]){
                     if(!sprinkler.waterOn){
@@ -350,31 +351,53 @@ function getGreenhouseClimate(call,callback){
 // function sends stream of available areas of soil iriigation
 function getSoilAreas(call){
     print("get soil areas");
-    for(const [index,area] of soil_areas){
+    // for(const [index,area] of soil_areas){
+    for(let i=0;i<soil_areas.length;i++){
+        const area = soil_areas[i];    
         print(area.name);
-        const areaID = "soil-"+index;
+        const areaID = "soil-"+i;
         call.write({areaID: areaID,name: area.name});
     }
     call.end();
 }
 
 function getSoilData(call,callback){
+    print("soil data");
     const areaID = call.request.areaID;
     var areaNo = areaID.split("-")[1];
-
     if(soil_sensors[areaNo]){
-        callback(null,{areaID: areaID,soil_humidity: soil_sensors[areaNo].humidity});
+        print("answer");
+        callback(null,{areaID: areaNo,soil_humidity: soil_sensors[areaNo].humidity});
+    }
+    else {
+        callback(null,{areaID: "No sensors"});
     }
 }
 
 function getAllSprinklersStatus(call){
     print("get sprinklers");
-    for(const device of soil_sprinklers){
-        print(device.deviceID);
+    
+    try {
+        // get area number from call.areaID
+        const areaNo = call.request.areaID.split("-")[1];
+        // if (soil_sprinklers[areaNo])
+        if (isNaN(areaNo) || !soil_sprinklers[areaNo] || soil_sprinklers[areaNo].length < 1){
+            call.write({deviceID: "No sprinklers in area",water_on: false});
+        }
+        else {
 
-        call.write({deviceID: device.deviceID,water_on: device.waterOn});
+            for(const device of soil_sprinklers[areaNo]){
+                print(device.deviceID);
+                
+                call.write({deviceID: device.deviceID,water_on: device.waterOn});
+            }
+        }
     }
-    call.end();
+    catch(err){
+        print("error getting sprinklers");
+        print(err);
+    }
+        call.end();
 }
 
 var server = new grpc.Server();

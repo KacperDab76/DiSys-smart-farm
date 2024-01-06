@@ -1,23 +1,26 @@
 <script>
     let promise = getSoilAreas();
-    let div = "Soil Irrigation";
+    let div = "";
+    let area_info = "Soil Irrigation";
     let sensors,sprinklers;
-    // let interval = null;
-    // let intervalTime = 3000;
+    let areas = [];
+    let interval = null;
+    let intervalTime = 2000;
 
     // tmp
-    sensors = [{name: "S1",value: 3}];
-    sprinklers = [{name: "Sprinkler",value: 5}];
+    sensors = [{name: "No sensors in area",value: ""}];
+    sprinklers = [{name: "No sprinklers in area",value: ""}];
 
     async function getSoilAreas(){
         // alert("get them!!");
         const res = await fetch(`/soilareas`);
 		const response = await res.json();
         if(res.ok){
+            areas = response.areas;
             return response.areas;
         }
         else {
-            throw new Error("Error getting greenhouses");
+            throw new Error("Error getting soil irrigation areas");
         }
     }
     async function getInfo(areaID,infoType){
@@ -27,26 +30,44 @@
             console.log(response);
             // change to array of objects?
             var ret = [];
-            for (const prop in response){
-                //if (prop != "deviceID")
-                    ret.push({name: prop,value: response[prop]});
+            if(response.length>0){
+                for (const device of response){
+
+                    for (const prop in device){
+                        //if (prop != "deviceID")
+                        console.log("prop "+prop+" rest"+device[prop]);
+                        ret.push({name: prop,value: device[prop]});
+                    }
+                }
+            }
+            else {
+                ret.push({name: "",value: " no sprinklers in area"});
             }
             // console.log(ret);
             return ret;
         }
         else {
-            throw new Error("Error getting inforamtion for greenhouses");
+            throw new Error("Error getting inforamtion for soil irrigation");
         }
     }
     function changeActive(name){
         div = name;
-  
+        let divNo = div.split("-")[1];
+        area_info = areas[divNo].name+ " ID : "+divNo;
+        if (interval != null)
+            clearInterval(interval);
+
+        interval = setInterval(()=>{
+            sensors = getInfo(name,1);
+            sprinklers = getInfo(name,2);
+
+        },intervalTime);
         sensors = getInfo(name,1);
         sprinklers = getInfo(name,2);
     }
 </script>
 <div>
-    <h1> {div}</h1>
+    <h1>{area_info} </h1>
 
     <div class="wrapper">
 
@@ -66,9 +87,9 @@
         {/await}
         <!-- <div class="wrapper"> -->
 
-            {#if div != "Greenhouses"}
+            {#if div != "Soil Irrigation"}
             <div class="info">
-                Sensors
+                Sensor
                 {#await sensors}
                     <!-- <p>...getting sensor readings</p> -->
                 {:then info}
@@ -85,9 +106,12 @@
                 {#await sprinklers}
                     <!-- <p>...getting sensor readings</p> -->
                 {:then info}
-                    {#each info as {name,value}}
-                    <p>{name} : {value}</p>
-                    {/each}
+                    
+                        {#each info as {name,value}}
+                        <p>{name} : {value}</p>
+                            <!-- {value} :  -->
+                        {/each}
+                    
                 {:catch error}
                     <p style="color: red">{error.message}</p>
                 {/await}

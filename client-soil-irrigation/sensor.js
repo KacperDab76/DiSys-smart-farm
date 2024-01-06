@@ -29,7 +29,7 @@ const sensorData = [
         [71,77,12,34,89,76,65,56,45,34,23,45,49,79,80,21],
         [10,12,34,53,71,23,35,46,75,45,12,34,89,76,65,56,45,34,23,45,71]
     ];
-const interval = 1000;
+const interval = 3000;
 var printDebug = false;
 
 function print(message){

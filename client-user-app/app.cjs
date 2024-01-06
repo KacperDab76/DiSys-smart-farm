@@ -143,8 +143,10 @@ function getSoilAreas(res){
     var call = client.getSoilAreas({});
     call.on("data",(response)=>{
         try {
-            // print("answer");
+            print("answer");
+            print(response);
             var area = {areaID: response.areaID,name: response.name};
+            print(area);
             areas.push(area);
         }
         catch (err){
@@ -154,7 +156,8 @@ function getSoilAreas(res){
     call.on("end",()=>{
         print("end");
         print(areas);
-
+        if (areas.length==0)
+            areas = {areaID: 0 ,name: "NO areas"};
         res.send({areas: areas});
     });
     call.on("error",(err)=>{
@@ -172,6 +175,7 @@ function getSoilAreaInfo(req,res){
         switch (infoType) {
             case 1 :
                 // get data from sensor
+                print("get soil data");
                 client.getSoilData({areaID: areaID},(err,reply)=>{
                     if (err){
                         print("error");
@@ -179,7 +183,7 @@ function getSoilAreaInfo(req,res){
                     }else {
                         print("reply");
                         print(reply);
-                        res.send(reply);
+                        res.send([reply]);
                     }
                 });
                 break;
@@ -191,32 +195,40 @@ function getSoilAreaInfo(req,res){
                     try {
                         print("reply");
                         print(reply);
-                        sprinklers.push({name: reply.deviceID,value: reply.water_on});
+                        let water = (reply.water_on)?"Water ON":"Water off";
+                        sprinklers.push({name: reply.deviceID,value: water});
 
                     }
                     catch (err){
 
                         print("error");
-                        res.send({message: `server error $(err)`});
+                        // res.send({message: `server error $(err)`});
+                        sprinklers.push({name: "error occured", value: ""});
                     }
                 });
                 call.on("end",()=>{
                     print("end");
                     print(sprinklers);
             
-                    res.send({sprinklers: sprinklers});
+                    res.send(sprinklers);
                 });
                 call.on("error",(err)=>{
-                    res.send({message: ["No data available"]});
+                    print("error 1");
+                    // res.send({message: ["No data available"]});
+                    sprinklers.push({name: "error occured", value: ""});
+
                 });
                 break;
             default:
+                print("unknown");
                 res.send({message: "unknown info type"});            
         }
 
 
     }
     catch(err) {
+
+        print("error 3")
         res.send({error: err});
     }
 
