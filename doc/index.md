@@ -2,11 +2,13 @@ Project for simulation of smart farm using gRPC for communication and Svelte app
 
 Simulation has server and 3 clients for 3 different gRPC services
 always run npm install in each directoty you use 
+also run npm run build in client-user-app to create Svelte app
 1. Server
 server runs normally using npm start in server directory
 2. GUI 
 Runs as node client that uses express to serve app to browser
-in client-user-app directory run npm start , it runs app.cjs
+
+in client-user-app directory run npm install , npm run build, npm start , it runs app.cjs
 and serves GUI on port 3000 (localhost:3000)
 Click on register to connect to server. As there is no clients/devices connected app shows no Greenhouses but it shows 5 predefined soil irrigation areas, with no data there.
 3. Greenhuses

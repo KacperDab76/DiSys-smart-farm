@@ -121,9 +121,12 @@ function sensorReading(call,callback){
             
             if (soil_sprinklers[area]){
                 for (sprinkler of soil_sprinklers[reading.areaID]){
-                    if(!sprinkler.waterOn){
-                        print(`turn on ${sprinkler.deviceID}`);
-                        sprinkler.call.write({task: 2,deviceID: sprinkler.deviceID});
+                    if (sprinkler){
+
+                        if(!sprinkler.waterOn){
+                            print(`turn on ${sprinkler.deviceID}`);
+                            sprinkler.call.write({task: 2,deviceID: sprinkler.deviceID});
+                        }
                     }
                 }
             }
@@ -134,11 +137,14 @@ function sensorReading(call,callback){
             const area = reading.areaID;
             if (soil_sprinklers[area]){
                 for (sprinkler of soil_sprinklers[area]){
-                    print(sprinkler.deviceID);
-                    if(sprinkler.waterOn){
+                    if(sprinkler){
 
-                        print(`turn off ${sprinkler}`);
-                        sprinkler.call.write({task: 3,deviceID: sprinkler.deviceID});
+                        print(sprinkler.deviceID);
+                        if(sprinkler.waterOn){
+                            
+                            print(`turn off ${sprinkler}`);
+                            sprinkler.call.write({task: 3,deviceID: sprinkler.deviceID});
+                        }
                     }
                 }
             }           
